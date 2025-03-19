@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to DOCX Converter v1.0</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">JSON to DOCX Converter v1.0</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <textarea 
+                id="jsonInput" 
+                class="w-full h-48 p-4 border rounded-lg mb-4"
+                placeholder="Enter your JSON here..."
+            ></textarea>
+            
+            <button
+                class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+                onclick="convertToDocx()"
+            >
+                Convert to DOCX
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function convertToDocx() {
+            try {
+                const jsonData = JSON.parse(document.getElementById('jsonInput').value);
+                fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'converted.docx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                })
+                .catch(error => {
+                    alert('Error converting file: ' + error.message);
+                });
+            } catch (e) {
+                alert('Invalid JSON format. Please check your input.');
+            }
+        }
+    </script>
+</body>
+</html>
